@@ -1,0 +1,77 @@
+library(rstanarm)
+library(dplyr)
+
+#Mac
+setwd("/Users/soojungla/Library/CloudStorage/Dropbox/0.SooJungHellenaLa/1.BigData16/00 programming/04 Data/FourthAssignment/titanic")
+
+data <- read.csv("./data.csv")
+
+data <- subset(data, select = -c(Sex))
+data <- subset(data, select = -c(X))
+View(data)
+
+#######################################################
+# data$Female <- ifelse(data$Sex == "female", 1, 0)
+# 
+# View(data %>% select('Sex','Female'))
+# write.csv(data, "./data.csv")
+#######################################################
+
+# reg1 <- lm(Age ~ Female, data=data)
+# summary(reg1)
+#
+# reg2 <- lm(Age ~ Pclass, data=data)
+# summary(reg2)
+#
+# reg3 <- lm(Age ~ Fare, data=data)
+# summary(reg3)
+
+# reg4 <- lm(Age ~ Parch, data=data)
+# summary(reg4)
+#
+# reg5 <- lm(Age ~ SibSp, data=data)
+# summary(reg5)
+
+my_model1 <- stan_glm(Age ~ Female + Pclass + Fare, data=data)
+predictors1 <- data[, c("Female", "Pclass", "Fare")]
+Age_hat1 <- predict(my_model1, newdata = predictors1)
+
+my_model2 <- stan_glm(Age ~ Pclass + Fare, data=data)
+predictors2 <- data[, c("Pclass", "Fare")]
+Age_hat2 <- predict(my_model2, newdata = predictors2)
+
+my_model3 <- stan_glm(Age ~ Female + Pclass + Fare + Parch, data=data)
+predictors3 <- data[, c("Female", "Pclass", "Fare", "Parch")]
+Age_hat3 <- predict(my_model3, newdata = predictors3)
+
+my_model4 <- stan_glm(Age ~ Female + Pclass + Fare + Parch + SibSp, data=data)
+predictors4 <- data[, c("Female", "Pclass", "Fare", "Parch", "SibSp")]
+Age_hat4 <- predict(my_model4, newdata = predictors4)
+
+my_model5 <- stan_glm(Age ~ Female*Pclass + Fare + Parch + SibSp, data=data)
+summary(my_model5)
+predictors5 <- data[, c("Female", "Pclass", "Fare", "Parch", "SibSp")]
+Age_hat5 <- predict(my_model5, newdata = predictors5)
+
+my_model6 <- stan_glm(Age ~ Female + Pclass * Fare + Parch + SibSp, data=data)
+predictors6 <- data[, c("Female", "Pclass", "Fare", "Parch", "SibSp")]
+Age_hat6 <- predict(my_model6, newdata = predictors6)
+
+
+
+
+
+df <- data_frame(Age_hat1,Age_hat2,Age_hat3,Age_hat4,Age_hat5,Age_hat6)
+df$age_mean <- rowMeans(df)
+
+View(df)
+# 
+# compare <- data_frame(data$Age,Age_hat6)
+# View(compare)
+
+
+write.csv(df, "./Ages.csv")
+
+
+
+rm(list = ls())
